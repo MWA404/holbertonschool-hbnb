@@ -96,7 +96,7 @@ sequenceDiagram
     Database-->>BusinessLogic: Return list of places
     BusinessLogic->>BusinessLogic: Format place data (include owner info, amenities)
     BusinessLogic-->>API: Return formatted place list
-    API-->>User: Return Success (200 OK)
+    API-->>User: Return Success (200 OK) (JSON Array of Places)
 ```
 
 ### Description

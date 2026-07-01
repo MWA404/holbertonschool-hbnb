@@ -26,6 +26,7 @@ class User {
 class Place {
     +String title
     +String description
+    +String owner_id
     +Float price
     +Float latitude
     +Float longitude
@@ -39,6 +40,8 @@ class Place {
 
 class Review {
     +Integer rating
+    +String user_id
+    +String place_id
     +String comment
     +create()
     +update()
@@ -63,7 +66,7 @@ BaseModel <|-- Amenity : Inheritance
 User "1" --> "0..*" Place : owns
 User "1" --> "0..*" Review : writes
 Place "1" --> "0..*" Review : has
-Place "0..*" *-- "0..*" Amenity : contains
+Place "0..*" --> "0..*" Amenity : has
 ```
 
 ## Explanatory Notes
@@ -131,5 +134,5 @@ A user can write multiple reviews, but each review is written by one user. This 
 A place can have multiple reviews, but each review belongs to one place. This is represented as a `1 to 0..*` association.
 
 **Place ↔ Amenity (Many to Many)**
-A place can have multiple amenities, and an amenity can be associated with multiple places. This is represented as a `0..* to 0..*` composition. This relationship allows amenities to be reused across different places.
+A place can have multiple amenities, and an amenity can be associated with multiple places. This is represented as a `0..* to 0..*` Many-to-Many Association§. This relationship allow amenities to be reused across different places.
 
