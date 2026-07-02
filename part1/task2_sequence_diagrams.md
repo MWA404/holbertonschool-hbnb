@@ -98,6 +98,5 @@ sequenceDiagram
     BusinessLogic-->>API: Return formatted place list
     API-->>User: Return Success (200 OK) (JSON Array of Places)
 ```
-
 ### Description
 This diagram shows the process of fetching a list of all available places. The user sends a GET request to retrieve places. The API layer forwards the request to the Business Logic layer, which requests all places from the Database. The Database returns the list of places. The Business Logic layer then formats the data, including the owner information and associated amenities for each place. The formatted list is returned through the layers to the user.
