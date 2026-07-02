@@ -129,6 +129,7 @@ class Place {
     +Float price
     +Float latitude
     +Float longitude
+    +String owner_id
     +create()
     +update()
     +delete()
@@ -138,6 +139,8 @@ class Place {
 }
 
 class Review {
+    +String user_id
+    +String place_id
     +Integer rating
     +String comment
     +create()
