@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_restx import Api
 from config import config
+from app.api.v1.users import api as users_ns
 
 def create_app(config_name='default'):
     app = Flask(__name__)
@@ -10,5 +11,8 @@ def create_app(config_name='default'):
               description='HBnB Application API Marketplace',
               doc='/api/v1/docs')
 
+    # Register the namespaces
+    api.add_namespace(users_ns, path='/api/v1/users')
 
     return app
+
