@@ -1,12 +1,14 @@
 import re
 
 from app.models.user import User
+from app.models.amenity import Amenity
 from app.persistence.repository import InMemoryRepository
 
 
 class HBnBFacade:
     def __init__(self):
         self.user_repo = InMemoryRepository()
+        self.amenity_repo = InMemoryRepository()
 
     @staticmethod
     def _validate_user_data(user_data):
@@ -25,6 +27,14 @@ class HBnBFacade:
                 or not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
             raise ValueError("A valid email is required")
 
+    @staticmethod
+    def _validate_amenity_data(amenity_data):
+        """Validate amenity payload."""
+        name = amenity_data.get('name')
+        if not name or not isinstance(name, str) or len(name) > 50:
+            raise ValueError("name is required (max 50 characters)")
+
+    # ----------------------------- User -----------------------------------
     def create_user(self, user_data):
         self._validate_user_data(user_data)
         user = User(**user_data)
@@ -50,3 +60,23 @@ class HBnBFacade:
             return None
         self._validate_user_data(user_data)
         return self.user_repo.update(user_id, user_data)
+
+    # ---------------------------- Amenity ----------------------------------
+    def create_amenity(self, amenity_data):
+        self._validate_amenity_data(amenity_data)
+        amenity = Amenity(**amenity_data)
+        self.amenity_repo.add(amenity)
+        return amenity
+
+    def get_amenity(self, amenity_id):
+        return self.amenity_repo.get(amenity_id)
+
+    def get_all_amenities(self):
+        return self.amenity_repo.get_all()
+
+    def update_amenity(self, amenity_id, amenity_data):
+        amenity = self.amenity_repo.get(amenity_id)
+        if not amenity:
+            return None
+        self._validate_amenity_data(amenity_data)
+        return self.amenity_repo.update(amenity_id, amenity_data)
