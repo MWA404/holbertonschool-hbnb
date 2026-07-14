@@ -11,6 +11,7 @@ class HBnBFacade:
         self.user_repo = InMemoryRepository()
         self.amenity_repo = InMemoryRepository()
         self.place_repo = InMemoryRepository()
+        self.review_repo = InMemoryRepository()
 
     @staticmethod
     def _validate_user_data(user_data):
@@ -157,3 +158,65 @@ class HBnBFacade:
         if amenity_ids is not None:
             place.amenity_ids = list(amenity_ids)
         return self.place_repo.update(place_id, data)
+    # ----------------------------- Review -----------------------------------
+    def _validate_review_data(self, review_data, partial=False):
+        """Validate review payload."""
+        def has(field):
+            return field in review_data
+
+        if not partial or has('text'):
+            text = review_data.get('text')
+            if not text or not isinstance(text, str):
+                raise ValueError("text is required")
+
+        if not partial or has('rating'):
+            rating = review_data.get('rating')
+            if not isinstance(rating, int) or isinstance(rating, bool) \
+                    or not 1 <= rating <= 5:
+                raise ValueError("rating must be an integer between 1 and 5")
+
+        if not partial or has('user_id'):
+            user = self.get_user(review_data.get('user_id'))
+            if not user:
+                raise ValueError("user_id does not match any existing user")
+
+        if not partial or has('place_id'):
+            place = self.get_place(review_data.get('place_id'))
+            if not place:
+                raise ValueError("place_id does not match any existing place")
+
+    def create_review(self, review_data):
+        self._validate_review_data(review_data)
+        from app.models.review import Review
+        review = Review(**review_data)
+        self.review_repo.add(review)
+        place = self.get_place(review_data['place_id'])
+        if place and review.id not in place.review_ids:
+            place.review_ids.append(review.id)
+        return review
+
+    def get_review(self, review_id):
+        return self.review_repo.get(review_id)
+
+    def get_all_reviews(self):
+        return self.review_repo.get_all()
+
+    def get_reviews_by_place(self, place_id):
+        return [r for r in self.review_repo.get_all()
+                if r.place_id == place_id]
+
+    def update_review(self, review_id, review_data):
+        review = self.review_repo.get(review_id)
+        if not review:
+            return None
+        self._validate_review_data(review_data, partial=True)
+        return self.review_repo.update(review_id, review_data)
+
+    def delete_review(self, review_id):
+        review = self.review_repo.get(review_id)
+        if review:
+            place = self.get_place(review.place_id)
+            if place and review_id in place.review_ids:
+                place.review_ids.remove(review_id)
+            self.review_repo.delete(review_id)
+        return review
