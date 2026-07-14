@@ -2,6 +2,7 @@ import re
 
 from app.models.user import User
 from app.models.amenity import Amenity
+from app.models.place import Place
 from app.persistence.repository import InMemoryRepository
 
 
@@ -9,6 +10,7 @@ class HBnBFacade:
     def __init__(self):
         self.user_repo = InMemoryRepository()
         self.amenity_repo = InMemoryRepository()
+        self.place_repo = InMemoryRepository()
 
     @staticmethod
     def _validate_user_data(user_data):
@@ -33,6 +35,53 @@ class HBnBFacade:
         name = amenity_data.get('name')
         if not name or not isinstance(name, str) or len(name) > 50:
             raise ValueError("name is required (max 50 characters)")
+
+    def _validate_place_data(self, place_data, partial=False):
+        """Validate place payload.
+
+        When partial is True (PUT), only the provided fields are checked.
+        """
+        def has(field):
+            return field in place_data
+
+        if not partial or has('title'):
+            title = place_data.get('title')
+            if not title or not isinstance(title, str) or len(title) > 100:
+                raise ValueError("title is required (max 100 characters)")
+
+        if not partial or has('price'):
+            price = place_data.get('price')
+            if not isinstance(price, (int, float)) \
+                    or isinstance(price, bool) or price < 0:
+                raise ValueError("price must be a non-negative number")
+
+        if not partial or has('latitude'):
+            latitude = place_data.get('latitude')
+            if not isinstance(latitude, (int, float)) \
+                    or isinstance(latitude, bool) \
+                    or not -90 <= latitude <= 90:
+                raise ValueError("latitude must be between -90 and 90")
+
+        if not partial or has('longitude'):
+            longitude = place_data.get('longitude')
+            if not isinstance(longitude, (int, float)) \
+                    or isinstance(longitude, bool) \
+                    or not -180 <= longitude <= 180:
+                raise ValueError("longitude must be between -180 and 180")
+
+        if not partial or has('owner_id'):
+            owner = self.get_user(place_data.get('owner_id'))
+            if not owner:
+                raise ValueError("owner_id does not match any existing user")
+
+        if has('amenities'):
+            amenities = place_data.get('amenities')
+            if not isinstance(amenities, list):
+                raise ValueError("amenities must be a list of amenity IDs")
+            for amenity_id in amenities:
+                if not self.get_amenity(amenity_id):
+                    raise ValueError(
+                        "amenity '{}' does not exist".format(amenity_id))
 
     # ----------------------------- User -----------------------------------
     def create_user(self, user_data):
@@ -80,3 +129,31 @@ class HBnBFacade:
             return None
         self._validate_amenity_data(amenity_data)
         return self.amenity_repo.update(amenity_id, amenity_data)
+
+    # ----------------------------- Place ------------------------------------
+    def create_place(self, place_data):
+        self._validate_place_data(place_data)
+        data = dict(place_data)
+        amenity_ids = data.pop('amenities', [])
+        data.setdefault('description', "")
+        place = Place(**data)
+        place.amenity_ids = list(amenity_ids)
+        self.place_repo.add(place)
+        return place
+
+    def get_place(self, place_id):
+        return self.place_repo.get(place_id)
+
+    def get_all_places(self):
+        return self.place_repo.get_all()
+
+    def update_place(self, place_id, place_data):
+        place = self.place_repo.get(place_id)
+        if not place:
+            return None
+        self._validate_place_data(place_data, partial=True)
+        data = dict(place_data)
+        amenity_ids = data.pop('amenities', None)
+        if amenity_ids is not None:
+            place.amenity_ids = list(amenity_ids)
+        return self.place_repo.update(place_id, data)
