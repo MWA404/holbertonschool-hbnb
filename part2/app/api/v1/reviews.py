@@ -78,11 +78,17 @@ class ReviewResource(Resource):
             return {'error': 'Review not found'}, 404
 
         try:
-            facade.update_review(review_id, review_data)
+            updated_review = facade.update_review(review_id, review_data)
         except (ValueError, TypeError) as e:
             return {'error': str(e)}, 400
 
-        return {'message': 'Review updated successfully'}, 200
+        return {
+            'id': updated_review.id,
+            'text': updated_review.text,
+            'rating': updated_review.rating,
+            'user_id': updated_review.user_id,
+            'place_id': updated_review.place_id
+        }, 200
 
     @api.response(200, 'Review deleted successfully')
     @api.response(404, 'Review not found')
@@ -96,10 +102,18 @@ class ReviewResource(Resource):
         return {'message': 'Review deleted successfully'}, 200
 
 
-@api.route('/places/<place_id>/reviews')
+place_reviews_ns = Namespace(
+    'place_reviews',
+    description='Reviews associated with places'
+)
+
+
+@place_reviews_ns.route('/<place_id>/reviews')
 class PlaceReviewList(Resource):
-    @api.response(200, 'List of reviews for the place retrieved successfully')
-    @api.response(404, 'Place not found')
+    @place_reviews_ns.response(
+        200, 'List of reviews for the place retrieved successfully'
+    )
+    @place_reviews_ns.response(404, 'Place not found')
     def get(self, place_id):
         """Get all reviews for a specific place"""
         place = facade.get_place(place_id)

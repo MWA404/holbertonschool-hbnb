@@ -147,7 +147,7 @@ class TestReviewEndpoints(unittest.TestCase):
             "place_id": self.place_id
         })
         response = self.client.get(
-            '/api/v1/reviews/places/{}/reviews'.format(self.place_id))
+            '/api/v1/places/{}/reviews'.format(self.place_id))
         self.assertEqual(response.status_code, 200)
 
 
