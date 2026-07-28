@@ -1,5 +1,8 @@
 from flask import Flask
+from flask_bcrypt import Bcrypt
 from config import DevelopmentConfig
+
+bcrypt = Bcrypt()
 
 
 def create_app(config_class=DevelopmentConfig):
@@ -7,6 +10,8 @@ def create_app(config_class=DevelopmentConfig):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
-    # Register blueprints and extensions here as needed
+    bcrypt.init_app(app)
+
+    # Register blueprints here as needed
 
     return app
