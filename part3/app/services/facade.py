@@ -3,16 +3,17 @@ import re
 from app.models.user import User
 from app.models.amenity import Amenity
 from app.models.place import Place
-from app.persistence.repository import InMemoryRepository
+from app.models.review import Review
+from app.persistence.repository import SQLAlchemyRepository
 from app.services.repositories.user_repository import UserRepository
 
 
 class HBnBFacade:
     def __init__(self):
         self.user_repo = UserRepository()
-        self.amenity_repo = InMemoryRepository()
-        self.place_repo = InMemoryRepository()
-        self.review_repo = InMemoryRepository()
+        self.amenity_repo = SQLAlchemyRepository(Amenity)
+        self.place_repo = SQLAlchemyRepository(Place)
+        self.review_repo = SQLAlchemyRepository(Review)
 
     @staticmethod
     def _validate_user_data(user_data):
@@ -128,6 +129,15 @@ class HBnBFacade:
         self._validate_amenity_data(amenity_data)
         return self.amenity_repo.update(amenity_id, amenity_data)
 
+    def delete_amenity(self, amenity_id):
+        """Delete an amenity by ID."""
+        amenity = self.amenity_repo.get(amenity_id)
+        if not amenity:
+            return None
+
+        self.amenity_repo.delete(amenity_id)
+        return amenity
+
     # ----------------------------- Place ------------------------------------
     def create_place(self, place_data):
         self._validate_place_data(place_data)
@@ -155,6 +165,15 @@ class HBnBFacade:
         if amenity_ids is not None:
             place.amenity_ids = list(amenity_ids)
         return self.place_repo.update(place_id, data)
+
+    def delete_place(self, place_id):
+        """Delete a place by ID."""
+        place = self.place_repo.get(place_id)
+        if not place:
+            return None
+
+        self.place_repo.delete(place_id)
+        return place
 
     # ----------------------------- Review -----------------------------------
     def _validate_review_data(self, review_data, partial=False):
@@ -186,7 +205,6 @@ class HBnBFacade:
 
     def create_review(self, review_data):
         self._validate_review_data(review_data)
-        from app.models.review import Review
         review = Review(**review_data)
         self.review_repo.add(review)
         place = self.get_place(review_data['place_id'])

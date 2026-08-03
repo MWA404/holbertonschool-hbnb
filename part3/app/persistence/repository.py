@@ -65,11 +65,14 @@ class SQLAlchemyRepository(Repository):
         return self.model.query.all()
 
     def update(self, obj_id, data):
+        """Update and return an existing object."""
         obj = self.get(obj_id)
         if obj:
             for key, value in data.items():
                 setattr(obj, key, value)
             db.session.commit()
+            return obj
+        return None
 
     def delete(self, obj_id):
         obj = self.get(obj_id)
