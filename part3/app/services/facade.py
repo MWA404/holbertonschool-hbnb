@@ -140,12 +140,18 @@ class HBnBFacade:
 
     # ----------------------------- Place ------------------------------------
     def create_place(self, place_data):
+        """Create and persist a place with its amenities."""
         self._validate_place_data(place_data)
         data = dict(place_data)
         amenity_ids = data.pop('amenities', [])
         data.setdefault('description', "")
+
         place = Place(**data)
-        place.amenity_ids = list(amenity_ids)
+        place.amenities = [
+            self.get_amenity(amenity_id)
+            for amenity_id in amenity_ids
+        ]
+
         self.place_repo.add(place)
         return place
 
@@ -156,14 +162,21 @@ class HBnBFacade:
         return self.place_repo.get_all()
 
     def update_place(self, place_id, place_data):
+        """Update a place and its amenities."""
         place = self.place_repo.get(place_id)
         if not place:
             return None
+
         self._validate_place_data(place_data, partial=True)
         data = dict(place_data)
         amenity_ids = data.pop('amenities', None)
+
         if amenity_ids is not None:
-            place.amenity_ids = list(amenity_ids)
+            place.amenities = [
+                self.get_amenity(amenity_id)
+                for amenity_id in amenity_ids
+            ]
+
         return self.place_repo.update(place_id, data)
 
     def delete_place(self, place_id):
@@ -191,25 +204,29 @@ class HBnBFacade:
             rating = review_data.get('rating')
             if not isinstance(rating, int) or isinstance(rating, bool) \
                     or not 1 <= rating <= 5:
-                raise ValueError("rating must be an integer between 1 and 5")
+                raise ValueError(
+                    "rating must be an integer between 1 and 5"
+                )
 
         if not partial or has('user_id'):
             user = self.get_user(review_data.get('user_id'))
             if not user:
-                raise ValueError("user_id does not match any existing user")
+                raise ValueError(
+                    "user_id does not match any existing user"
+                )
 
         if not partial or has('place_id'):
             place = self.get_place(review_data.get('place_id'))
             if not place:
-                raise ValueError("place_id does not match any existing place")
+                raise ValueError(
+                    "place_id does not match any existing place"
+                )
 
     def create_review(self, review_data):
+        """Create and persist a review."""
         self._validate_review_data(review_data)
         review = Review(**review_data)
         self.review_repo.add(review)
-        place = self.get_place(review_data['place_id'])
-        if place and review.id not in place.review_ids:
-            place.review_ids.append(review.id)
         return review
 
     def get_review(self, review_id):
@@ -219,21 +236,24 @@ class HBnBFacade:
         return self.review_repo.get_all()
 
     def get_reviews_by_place(self, place_id):
-        return [r for r in self.review_repo.get_all()
-                if r.place_id == place_id]
+        return [
+            review for review in self.review_repo.get_all()
+            if review.place_id == place_id
+        ]
 
     def update_review(self, review_id, review_data):
         review = self.review_repo.get(review_id)
         if not review:
             return None
+
         self._validate_review_data(review_data, partial=True)
         return self.review_repo.update(review_id, review_data)
 
     def delete_review(self, review_id):
+        """Delete a review by ID."""
         review = self.review_repo.get(review_id)
-        if review:
-            place = self.get_place(review.place_id)
-            if place and review_id in place.review_ids:
-                place.review_ids.remove(review_id)
-            self.review_repo.delete(review_id)
+        if not review:
+            return None
+
+        self.review_repo.delete(review_id)
         return review

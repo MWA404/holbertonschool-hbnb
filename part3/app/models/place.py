@@ -4,6 +4,23 @@ from app import db
 from app.models.base import BaseModel
 
 
+place_amenity = db.Table(
+    'place_amenity',
+    db.Column(
+        'place_id',
+        db.String(36),
+        db.ForeignKey('places.id'),
+        primary_key=True
+    ),
+    db.Column(
+        'amenity_id',
+        db.String(36),
+        db.ForeignKey('amenities.id'),
+        primary_key=True
+    )
+)
+
+
 class Place(BaseModel):
     """Represent a place stored in the database."""
 
@@ -14,6 +31,24 @@ class Place(BaseModel):
     price = db.Column(db.Float, nullable=False)
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
+    owner_id = db.Column(
+        db.String(36),
+        db.ForeignKey('users.id'),
+        nullable=False
+    )
+
+    reviews = db.relationship(
+        'Review',
+        backref='place',
+        lazy=True
+    )
+
+    amenities = db.relationship(
+        'Amenity',
+        secondary=place_amenity,
+        lazy='subquery',
+        backref=db.backref('places', lazy=True)
+    )
 
     def __init__(
         self,
@@ -31,8 +66,4 @@ class Place(BaseModel):
         self.price = price
         self.latitude = latitude
         self.longitude = longitude
-
-        # Relationships will be mapped in Task 8.
         self.owner_id = owner_id
-        self.amenity_ids = []
-        self.review_ids = []
