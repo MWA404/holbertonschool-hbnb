@@ -19,10 +19,10 @@ CREATE TABLE IF NOT EXISTS places (
     price DECIMAL(10, 2) NOT NULL,
     latitude FLOAT,
     longitude FLOAT,
-    user_id CHAR(36) NOT NULL,
+    owner_id CHAR(36) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    FOREIGN KEY (owner_id) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS reviews (

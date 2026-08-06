@@ -24,7 +24,7 @@ erDiagram
         DECIMAL price
         FLOAT latitude
         FLOAT longitude
-        CHAR(36) user_id FK
+        CHAR(36) owner_id FK
         TIMESTAMP created_at
         TIMESTAMP updated_at
     }
@@ -69,7 +69,7 @@ Stores application user accounts.
 
 ### PLACES
 Property listings created by users.
-- `user_id` — Foreign key linking to the owner in USERS
+- `owner_id` — Foreign key linking to the owner in USERS
 - `price` — DECIMAL(10, 2) for currency accuracy
 
 ### REVIEWS
