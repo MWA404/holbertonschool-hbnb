@@ -50,6 +50,11 @@ function getCookie(name) {
     return null;
 }
 
+function getPlaceIdFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('id');
+}
+
 function checkAuthentication() {
     const loginLink = document.getElementById('login-link');
     const token = getCookie('token');
@@ -59,6 +64,19 @@ function checkAuthentication() {
     }
 
     fetchPlaces(token);
+
+    const addReviewSection = document.getElementById('add-review');
+    if (addReviewSection) {
+        addReviewSection.style.display = token ? 'block' : 'none';
+    }
+
+    const placeDetailsSection = document.getElementById('place-details');
+    if (placeDetailsSection) {
+        const placeId = getPlaceIdFromURL();
+        if (placeId) {
+            fetchPlaceDetails(token, placeId);
+        }
+    }
 }
 
 async function fetchPlaces(token) {
@@ -96,6 +114,12 @@ function displayPlaces(places) {
             <p>Price per night: $${place.price}</p>
             <button class="details-button">View Details</button>
         `;
+
+        const detailsButton = placeCard.querySelector('.details-button');
+        detailsButton.addEventListener('click', () => {
+            window.location.href = `place.html?id=${place.id}`;
+        });
+
         placesList.appendChild(placeCard);
     });
 }
@@ -127,5 +151,70 @@ function populatePriceFilter() {
                 card.style.display = 'none';
             }
         });
+    });
+}
+
+async function fetchPlaceDetails(token, placeId) {
+    const headers = {};
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(
+        `http://127.0.0.1:5005/api/v1/places/${placeId}`,
+        {
+            method: 'GET',
+            headers: headers
+        }
+    );
+
+    if (response.ok) {
+        const place = await response.json();
+        displayPlaceDetails(place);
+    }
+}
+
+function displayPlaceDetails(place) {
+    const placeDetailsSection = document.getElementById('place-details');
+    placeDetailsSection.innerHTML = '';
+
+    const heading = document.createElement('h2');
+    heading.textContent = place.title;
+    placeDetailsSection.appendChild(heading);
+
+    const info = document.createElement('div');
+    info.className = 'place-info';
+
+    const ownerName = place.owner
+        ? `${place.owner.first_name} ${place.owner.last_name}`
+        : 'Unknown';
+
+    info.innerHTML = `
+        <p>Host: ${ownerName}</p>
+        <p>Price per night: $${place.price}</p>
+        <p>Description: ${place.description || ''}</p>
+        <p>Amenities:</p>
+    `;
+
+    place.amenities.forEach((amenity) => {
+        const amenityLine = document.createElement('p');
+        amenityLine.textContent = amenity.name;
+        info.appendChild(amenityLine);
+    });
+
+    placeDetailsSection.appendChild(info);
+
+    const reviewsSection = document.getElementById('reviews');
+    reviewsSection.innerHTML = '';
+
+    place.reviews.forEach((review) => {
+        const reviewCard = document.createElement('article');
+        reviewCard.className = 'review-card';
+        reviewCard.innerHTML = `
+            <p>${review.text}</p>
+            <p>${review.user_name}</p>
+            <p>Rating: ${review.rating}</p>
+        `;
+        reviewsSection.appendChild(reviewCard);
     });
 }
