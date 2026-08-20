@@ -76,6 +76,12 @@ function checkAuthentication() {
         const placeId = getPlaceIdFromURL();
         if (placeId) {
             fetchPlaceDetails(token, placeId);
+
+            const addReviewLink = document.querySelector(
+                '#add-review a.details-button');
+            if (addReviewLink) {
+                addReviewLink.href = `add_review.html?id=${placeId}`;
+            }
         }
     }
 }
