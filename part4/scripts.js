@@ -203,9 +203,26 @@ function displayPlaceDetails(place) {
         <p>Amenities:</p>
     `;
 
+    const amenityIcons = {
+        'wifi': 'images/icon_wifi.png',
+        'bed': 'images/icon_bed.png',
+        'bath': 'images/icon_bath.png',
+        'bathroom': 'images/icon_bath.png'
+    };
+
     place.amenities.forEach((amenity) => {
         const amenityLine = document.createElement('p');
-        amenityLine.textContent = amenity.name;
+        const key = amenity.name.toLowerCase();
+        const iconSrc = amenityIcons[key];
+
+        if (iconSrc) {
+            const icon = document.createElement('img');
+            icon.src = iconSrc;
+            icon.alt = amenity.name + ' icon';
+            amenityLine.appendChild(icon);
+        }
+
+        amenityLine.appendChild(document.createTextNode(amenity.name));
         info.appendChild(amenityLine);
     });
 
