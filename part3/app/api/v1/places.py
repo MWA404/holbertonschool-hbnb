@@ -71,6 +71,18 @@ class PlaceResource(Resource):
 
         owner = facade.get_user(place.owner_id)
 
+        reviews = []
+        for review in place.reviews:
+            reviewer = facade.get_user(review.user_id)
+            reviews.append({
+                'id': review.id,
+                'text': review.text,
+                'rating': review.rating,
+                'user_name': '{} {}'.format(
+                    reviewer.first_name, reviewer.last_name)
+                if reviewer else 'Unknown'
+            })
+
         return {
             'id': place.id,
             'title': place.title,
@@ -87,7 +99,8 @@ class PlaceResource(Resource):
             'amenities': [
                 {'id': amenity.id, 'name': amenity.name}
                 for amenity in place.amenities
-            ]
+            ],
+            'reviews': reviews
         }, 200
 
     @api.expect(place_model)
