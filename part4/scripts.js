@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     checkAuthentication();
     populatePriceFilter();
+    initAddReviewPage();
 });
 
 async function loginUser(email, password) {
@@ -217,4 +218,54 @@ function displayPlaceDetails(place) {
         `;
         reviewsSection.appendChild(reviewCard);
     });
+}
+
+function initAddReviewPage() {
+    const reviewForm = document.getElementById('review-form');
+    if (!reviewForm) {
+        return;
+    }
+
+    const token = getCookie('token');
+    if (!token) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    const placeId = getPlaceIdFromURL();
+
+    reviewForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const reviewText = document.getElementById('review').value;
+        const rating = document.getElementById('rating').value;
+
+        const response = await submitReview(
+            token, placeId, reviewText, rating);
+        handleResponse(response, reviewForm);
+    });
+}
+
+async function submitReview(token, placeId, reviewText, rating) {
+    return fetch('http://127.0.0.1:5005/api/v1/reviews/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            text: reviewText,
+            rating: parseInt(rating, 10),
+            place_id: placeId
+        })
+    });
+}
+
+function handleResponse(response, reviewForm) {
+    if (response.ok) {
+        alert('Review submitted successfully!');
+        reviewForm.reset();
+    } else {
+        alert('Failed to submit review');
+    }
 }
