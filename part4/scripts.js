@@ -265,7 +265,7 @@ function initAddReviewPage() {
 
         const response = await submitReview(
             token, placeId, reviewText, rating);
-        handleResponse(response, reviewForm);
+        await handleResponse(response, reviewForm);
     });
 }
 
@@ -284,11 +284,12 @@ async function submitReview(token, placeId, reviewText, rating) {
     });
 }
 
-function handleResponse(response, reviewForm) {
+async function handleResponse(response, reviewForm) {
     if (response.ok) {
         alert('Review submitted successfully!');
         reviewForm.reset();
     } else {
-        alert('Failed to submit review');
+        const data = await response.json().catch(() => ({}));
+        alert(data.error || 'Failed to submit review');
     }
 }
