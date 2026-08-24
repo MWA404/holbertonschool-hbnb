@@ -21,7 +21,16 @@ class ReviewList(Resource):
     def post(self):
         """Register a new review, tied to the authenticated user"""
         review_data = api.payload or {}
-        review_data['user_id'] = get_jwt_identity()
+        user_id = get_jwt_identity()
+        review_data['user_id'] = user_id
+
+        place_id = review_data.get('place_id')
+        existing = facade.get_reviews_by_place(place_id)
+        already_reviewed = any(r.user_id == user_id for r in existing)
+        if already_reviewed:
+            return {
+                'error': 'You have already reviewed this place'
+            }, 400
 
         try:
             new_review = facade.create_review(review_data)
