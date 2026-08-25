@@ -35,4 +35,13 @@ def create_app(config_class=DevelopmentConfig):
     api.add_namespace(reviews_ns, path='/api/v1/reviews')
     api.add_namespace(amenities_ns, path='/api/v1/amenities')
     app.register_blueprint(auth_bp, url_prefix='/api/v1/auth')
+
+    # Import models so SQLAlchemy registers them, then create the tables
+    with app.app_context():
+        from app.models.user import User
+        from app.models.place import Place
+        from app.models.review import Review
+        from app.models.amenity import Amenity
+        db.create_all()
+
     return app
