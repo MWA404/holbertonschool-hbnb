@@ -157,6 +157,7 @@ function populatePriceFilter() {
         option.textContent = value;
         priceFilter.appendChild(option);
     });
+    priceFilter.value = 'All';
 
     priceFilter.addEventListener('change', (event) => {
         const selected = event.target.value;
