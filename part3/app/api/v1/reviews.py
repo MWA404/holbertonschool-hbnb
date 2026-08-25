@@ -25,6 +25,11 @@ class ReviewList(Resource):
         review_data['user_id'] = user_id
 
         place_id = review_data.get('place_id')
+
+        # A user is not allowed to review their own place
+        place = facade.get_place(place_id)
+        if place and place.owner_id == user_id:
+            return {'error': 'You cannot review your own place'}, 400
         existing = facade.get_reviews_by_place(place_id)
         already_reviewed = any(r.user_id == user_id for r in existing)
         if already_reviewed:
