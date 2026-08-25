@@ -56,6 +56,12 @@ function getPlaceIdFromURL() {
     return params.get('id');
 }
 
+const placeImages = {
+    'Cozy Studio': 'https://images.stockcake.com/public/2/2/3/223eae97-73a9-41dd-9b6e-81023a24d20b_large/cozy-studio-apartment-stockcake.jpg',
+    'Beach House': 'https://cdn.autonomous.ai/static/upload/images/new_post/tiny-beach-house-designs-for-privacy-6520-1685693866974.webp',
+    'Mountain Cabin': 'https://images.stockcake.com/public/0/8/8/088f806e-76a3-46a1-8547-84e7ac958b47_large/mountain-cabin-retreat-stockcake.jpg'
+};
+
 function checkAuthentication() {
     const loginLink = document.getElementById('login-link');
     const token = getCookie('token');
@@ -116,7 +122,14 @@ function displayPlaces(places) {
         const placeCard = document.createElement('article');
         placeCard.className = 'place-card';
         placeCard.dataset.price = place.price;
+
+        const imageUrl = placeImages[place.title];
+        const imageHtml = imageUrl
+            ? `<img src="${imageUrl}" alt="${place.title}" class="place-image">`
+            : '';
+
         placeCard.innerHTML = `
+            ${imageHtml}
             <h2>${place.title}</h2>
             <p>Price per night: $${place.price}</p>
             <button class="details-button">View Details</button>
@@ -184,6 +197,15 @@ async function fetchPlaceDetails(token, placeId) {
 function displayPlaceDetails(place) {
     const placeDetailsSection = document.getElementById('place-details');
     placeDetailsSection.innerHTML = '';
+
+    const imageUrl = placeImages[place.title];
+    if (imageUrl) {
+        const image = document.createElement('img');
+        image.src = imageUrl;
+        image.alt = place.title;
+        image.className = 'place-image-large';
+        placeDetailsSection.appendChild(image);
+    }
 
     const heading = document.createElement('h2');
     heading.textContent = place.title;
