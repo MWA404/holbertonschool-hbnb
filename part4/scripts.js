@@ -278,6 +278,7 @@ function initAddReviewPage() {
     }
 
     const placeId = getPlaceIdFromURL();
+    updateReviewingLabel(placeId);
 
     reviewForm.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -289,6 +290,21 @@ function initAddReviewPage() {
             token, placeId, reviewText, rating);
         await handleResponse(response, reviewForm);
     });
+}
+
+async function updateReviewingLabel(placeId) {
+    const label = document.getElementById('reviewing-place-name');
+    if (!label || !placeId) {
+        return;
+    }
+
+    const response = await fetch(
+        `http://127.0.0.1:5005/api/v1/places/${placeId}`);
+
+    if (response.ok) {
+        const place = await response.json();
+        label.textContent = `Reviewing: ${place.title}`;
+    }
 }
 
 async function submitReview(token, placeId, reviewText, rating) {
