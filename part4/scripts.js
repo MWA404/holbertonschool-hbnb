@@ -1,4 +1,4 @@
-:%s#images/cozy_studio.jpg']*#images/cozy_studio.jpg#
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
