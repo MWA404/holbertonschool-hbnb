@@ -1,3 +1,4 @@
+:%s#images/cozy_studio.jpg']*#images/cozy_studio.jpg#
 
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
@@ -53,9 +54,9 @@ function getPlaceIdFromURL() {
 }
 
 const placeImages = {
-    'Cozy Studio': 'https://images.stockcake.com/public/2/2/3/223eae97-73a9-41dd-9b6e-81023a24d20b_large/cozy-studio-apartment-stockcake.jpg',
-    'Beach House': 'https://cdn.autonomous.ai/static/upload/images/new_post/tiny-beach-house-designs-for-privacy-6520-1685693866974.webp',
-    'Mountain Cabin': 'https://images.stockcake.com/public/0/8/8/088f806e-76a3-46a1-8547-84e7ac958b47_large/mountain-cabin-retreat-stockcake.jpg'
+    'Cozy Studio': 'images/cozy_studio.jpg',
+    'Beach House': 'images/beach_house.webp',
+    'Mountain Cabin': 'images/mountain_cabin.jpg'
 };
 
 function checkAuthentication() {
